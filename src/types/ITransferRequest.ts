@@ -3,7 +3,7 @@ export interface ITransferRequest {
     socketId?: string;
     fileDetails: {
         fileName: string;
-        fileSize: number;
+        fileSize: string;
         fileType: string;
     }
     code: string;
