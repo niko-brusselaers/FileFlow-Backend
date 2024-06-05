@@ -5,6 +5,7 @@ import { createServer } from "http";
 import cors from "cors";
 import { IConnectedDevice } from "./types/IConnectedDevice";
 import { ITransferRequest } from "./types/ITransferRequest";
+import { log } from "console";
 
 dotenv.config();
 
@@ -51,29 +52,28 @@ ws.on("connection", (socket) => {
         if(!requestingDevice) return socket.emit("localDevices", Error("socket id not found"));
         
         const localDevices = Array.from(connectedDevices.values()).filter((device) => device.publicIPAdress === requestingDevice.publicIPAdress);
-        console.log(localDevices);
         
 
         socket.emit("localDevices", localDevices);
     });
 
     socket.on("transferFileRequest", (data:ITransferRequest) => {
-        
+        log("transferFileRequest", data);
         //return error if no socketId, userName or code is provided or empty
-        if(!data.socketId && !data.userName) return socket.emit("transferFileRequest", Error("socketId or userName is required"));
+        if(!data.socketIdReceiver && !data.userNameReceiver && !data.socketIdSender && !data.userNameSender) return socket.emit("transferFileRequest", Error("socketId or userName of both receiver is required"));
         if(!data.code) return socket.emit("transferFileRequest", Error("code is required"));
 
-        if(data.socketId){
+        if(data.socketIdReceiver){
             //check if device is connected
-            const device = connectedDevices.get(data.socketId);
+            const device = connectedDevices.get(data.socketIdReceiver);
             if(!device) return socket.emit("transferFileRequest", Error("device not found"));
-            return ws.to(data.socketId).emit("transferFileRequest", data);
+            return ws.to(data.socketIdReceiver).emit("transferFileRequest", data);
         }
 
-        if(data.userName){
+        if(data.userNameReceiver){
             
             //check if device is connected
-            const device = Array.from(connectedDevices.values()).filter((device) => device.userName === data.userName);
+            const device = Array.from(connectedDevices.values()).filter((device) => device.userName === data.userNameReceiver);
             if(!device) return socket.emit("transferFileRequest", Error("device not found"));
 
             //send request to all devices with the same username
