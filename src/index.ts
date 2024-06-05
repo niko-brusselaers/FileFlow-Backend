@@ -58,7 +58,6 @@ ws.on("connection", (socket) => {
     });
 
     socket.on("transferFileRequest", (data:ITransferRequest) => {
-        log("transferFileRequest", data);
         //return error if no socketId, userName or code is provided or empty
         if(!data.socketIdReceiver && !data.userNameReceiver && !data.socketIdSender && !data.userNameSender) return socket.emit("transferFileRequest", Error("socketId or userName of both receiver is required"));
         if(!data.code) return socket.emit("transferFileRequest", Error("code is required"));
